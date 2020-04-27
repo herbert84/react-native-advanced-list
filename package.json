@@ -1,0 +1,26 @@
+{
+  "name": "react-native-advanced-list",
+  "version": "0.0.1",
+  "description": "Display a table with fixed column and horizontal scrollable list",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/herbert84/react-native-advanced-list.git"
+  },
+  "keywords": [
+    "react-native",
+    "react",
+    "android",
+    "ios",
+    "list",
+    "table",
+    "horizontal"
+  ],
+   "dependencies": {
+        "lodash": "^4.17.15"
+    },
+  "peerDependencies": {
+    "react-native": ">=v0.14.2"
+  },
+  "author": "Herbert Zhao <christian_zhaojun@hotmail.com>",
+  "license": "MIT"
+}
