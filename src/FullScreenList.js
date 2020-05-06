@@ -223,7 +223,7 @@ export default class AdvancedFullScreenList extends React.Component {
         return (<View style={{ flexDirection: "row", paddingRight: 18 }}>
             <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
                 <Text
-                    style={[styles.headerText, { width: item.width, marginLeft: 0, marginRight: 0 }]}>
+                    style={[styles.headerText, { width: item.width, marginLeft: 0, marginRight: 0, textAlign: item.textAlign }]}>
                     {item.label}
                 </Text>
                 {item.unit ? <Text
@@ -329,6 +329,7 @@ const styles = StyleSheet.create(
         },
         headerUnitText: {
             fontSize: 8,
+            lineHeight: 14,
             color: "#9F9F9F",
             textAlign: "right"
         },
