@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, Dimensions, TouchableHighlight, StyleSheet, Platform, Image, Text } from "react-native";
+import { Modal, View, Dimensions, TouchableHighlight, StyleSheet, Platform, Image, Text, TouchableWithoutFeedback } from "react-native";
 import ActionButton from "react-native-action-button";
 import Orientation from "react-native-orientation";
 import { AdvancedList } from "react-native-advanced-list";
@@ -202,21 +202,23 @@ export default class AdvancedFullScreenList extends React.Component {
     }
     renderSortableColumn (item) {
         return (
-            <TouchableOpacity key={this.randomStringId(10)} onPress={() => this.sortColumnData(item.colId)} activeOpacity={0.8} >
-                <View style={{ flexDirection: "row", paddingRight: 18 }}>
-                    <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
-                        <Text
-                            style={[styles.headerText, { width: item.width - 13, marginLeft: 0, marginRight: 6 }]}>
-                            {item.label}
-                        </Text>
-                        {!this.state.headerAlignCenter ? <Text
-                            style={[styles.headerUnitText, { marginLeft: 0, marginRight: 6 }]}>
-                            {item.unit}
-                        </Text> : null}
+            <TouchableWithoutFeedback key={this.randomStringId(10)} onPress={() => this.sortColumnData(item.colId)} activeOpacity={0.8}>
+                <View style={{ width: item.width + 18, height: 40, flexDirection: "column", justifyContent: "center" }}>
+                    <View style={{ flexDirection: "row", paddingRight: 18 }}>
+                        <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
+                            <Text
+                                style={[styles.headerText, { width: item.width - 13, marginLeft: 0, marginRight: 6 }]}>
+                                {item.label}
+                            </Text>
+                            {!this.state.headerAlignCenter ? <Text
+                                style={[styles.headerUnitText, { marginLeft: 0, marginRight: 6 }]}>
+                                {item.unit}
+                            </Text> : null}
+                        </View>
+                        {(this.state.sortType === "desc" && this.state.sortKey === item.colId) ? <Image source={require("../img/order_descending.png")} style={{ width: 7, height: 14 }} /> : (this.state.sortType === "asc" && this.state.sortKey === item.colId ? <Image source={require("../img/order_ascending.png")} style={{ width: 7, height: 14 }} /> : <Image source={require("../img/order_default.png")} style={{ width: 7, height: 14 }} />)}
                     </View>
-                    {(this.state.sortType === "desc" && this.state.sortKey === item.colId) ? <Image source={require("../img/order_descending.png")} style={{ width: 7, height: 14 }} /> : (this.state.sortType === "asc" && this.state.sortKey === item.colId ? <Image source={require("../img/order_ascending.png")} style={{ width: 7, height: 14 }} /> : <Image source={require("../img/order_default.png")} style={{ width: 7, height: 14 }} />)}
                 </View>
-            </TouchableOpacity >
+            </TouchableWithoutFeedback>
         )
     }
     renderFixedColumn (item) {

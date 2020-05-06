@@ -1,6 +1,6 @@
 {
   "name": "react-native-advanced-list",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "Display a table with fixed column and horizontal scrollable list",
   "repository": {
     "type": "git",
