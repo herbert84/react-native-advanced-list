@@ -7,6 +7,8 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import * as _ from "lodash";
 import TextSize from "react-native-text-size";
 
+const screentHeight = Dimensions.get("screen").height;
+console.log(screentHeight);
 export default class AdvancedFullScreenList extends React.Component {
     constructor(props) {
         super(props);
@@ -17,7 +19,9 @@ export default class AdvancedFullScreenList extends React.Component {
             rightHeader: [],
             data: [],
             sortKey: "",
-            sortType: ""
+            sortType: "",
+            headerAlignCenter: false,
+            availableWidth: 0
         };
     }
     componentDidMount () {
@@ -29,21 +33,38 @@ export default class AdvancedFullScreenList extends React.Component {
         let data = this.props.data;
         let columns = [];
         let playerData = [];
+        let findHasUnit = false;
         for (var i in data.cols) {
             if (data.cols[i].kpi) {
+                if (data.cols[i].unit)
+                    findHasUnit = true;
                 columns.push({
                     colId: data.cols[i].colId,
                     label: data.cols[i].name,
                     unit: data.cols[i].unit,
+                    sortable: true,
+                    textAlign: "right",
+                    width: 100
+                });
+            }
+            if (data.cols[i].colId === "COMMENT") {
+                columns.push({
+                    colId: data.cols[i].colId,
+                    label: data.cols[i].name,
+                    unit: "",
+                    sortable: false,
+                    textAlign: "left",
                     width: 100
                 });
             }
         }
+
         for (var j in data.rowsTable) {
             playerData.push(data.rowsTable[j]);
         }
 
         this.setState({
+            headerAlignCenter: !findHasUnit,
             data: { "players": playerData },
             rightHeader: columns
         }, () => this.measureTextSize());
@@ -73,9 +94,22 @@ export default class AdvancedFullScreenList extends React.Component {
                     colId: that.state.rightHeader[j].colId,
                     label: that.state.rightHeader[j].label,
                     unit: that.state.rightHeader[j].unit,
+                    sortable: that.state.rightHeader[j].sortable,
+                    textAlign: that.state.rightHeader[j].textAlign ? that.state.rightHeader[j].textAlign : "left",
                     width: values[j].width + 10
                 };
                 newRightHeader.push(column);
+            }
+            let marginLeft = Platform.OS === "ios" ? 34 : 0;
+            let marginRight = Platform.OS === "ios" ? 34 : 0;
+            let tableWidth = screentHeight - marginLeft - marginRight - 18 - 18;
+            let availableWidth = tableWidth - 100;
+            for (var k in newRightHeader) {
+                if (newRightHeader[k].colId !== "COMMENT")
+                    availableWidth -= newRightHeader[k].width + 18
+                else {
+                    newRightHeader[k].width = availableWidth > newRightHeader[k].width ? availableWidth : newRightHeader[k].width
+                }
             }
             that.setState({
                 rightHeader: newRightHeader
@@ -102,7 +136,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 key={this.randomStringId(10)}>
                 <View style={{ height: this.state.rowHeight, paddingLeft: 18, justifyContent: "center", alignItems: "flex-start", backgroundColor: bgColor }}>
                     <Text style={[styles.text, { textAlign: "left" }]}>
-                        {player.PLAYER_NUMBER + " " + player.PLAYER_NAME}
+                        {player.SHIRT_NUMBER ? player.SHIRT_NUMBER : "" + " " + player.PLAYER_NAME ? player.PLAYER_NAME : ""}
                     </Text>
                 </View>
             </TouchableHighlight>
@@ -123,8 +157,9 @@ export default class AdvancedFullScreenList extends React.Component {
         let rowItems = [];
         for (var i in this.state.rightHeader) {
             let columnKey = this.state.rightHeader[i].colId;
+            let textAlign = this.state.rightHeader[i].textAlign;
             let width = this.state.rightHeader[i].width;
-            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}><Text style={[styles.text, { width }]} >{player[columnKey]}</Text></View>);
+            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}><Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text></View>);
         }
         return (
             <TouchableHighlight
@@ -153,7 +188,7 @@ export default class AdvancedFullScreenList extends React.Component {
             });
         }
         let newList = _.sortBy(this.state.data.players, function (o) {
-            return (sortKey === "") ? parseInt(o.PLAYER_NUMBER, 10) : (sortType === "asc") ? parseFloat(o[colId], 10) : -parseFloat(o[colId], 10);
+            return (sortKey === "") ? parseInt(o.SHIRT_NUMBER, 10) : (sortType === "asc") ? parseFloat(o[colId], 10) : -parseFloat(o[colId], 10);
         });
         /*let newList = _.orderBy(this.state.data.players, function (o) {
             return [sortKey === "" ? parseFloat(o.PLAYER_NUMBER) : parseFloat(o[colId])];
@@ -164,30 +199,46 @@ export default class AdvancedFullScreenList extends React.Component {
         this.setState({
             data: { players: newList }
         });
-
+    }
+    renderSortableColumn (item) {
+        return (
+            <TouchableOpacity key={this.randomStringId(10)} onPress={() => this.sortColumnData(item.colId)} activeOpacity={0.8} >
+                <View style={{ flexDirection: "row", paddingRight: 18 }}>
+                    <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
+                        <Text
+                            style={[styles.headerText, { width: item.width - 13, marginLeft: 0, marginRight: 6 }]}>
+                            {item.label}
+                        </Text>
+                        {!this.state.headerAlignCenter ? <Text
+                            style={[styles.headerUnitText, { marginLeft: 0, marginRight: 6 }]}>
+                            {item.unit}
+                        </Text> : null}
+                    </View>
+                    {(this.state.sortType === "desc" && this.state.sortKey === item.colId) ? <Image source={require("../img/order_descending.png")} style={{ width: 7, height: 14 }} /> : (this.state.sortType === "asc" && this.state.sortKey === item.colId ? <Image source={require("../img/order_ascending.png")} style={{ width: 7, height: 14 }} /> : <Image source={require("../img/order_default.png")} style={{ width: 7, height: 14 }} />)}
+                </View>
+            </TouchableOpacity >
+        )
+    }
+    renderFixedColumn (item) {
+        return (<View style={{ flexDirection: "row", paddingRight: 18 }}>
+            <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
+                <Text
+                    style={[styles.headerText, { width: item.width, marginLeft: 0, marginRight: 0 }]}>
+                    {item.label}
+                </Text>
+                {item.unit ? <Text
+                    style={[styles.headerUnitText, { marginLeft: 0, marginRight: 0 }]}>
+                    {item.unit}
+                </Text> : null}
+            </View>
+        </View>)
     }
     _favHeader () {
         return (
-            this.state.rightHeader.map((item) =>
-                (
-                    <TouchableOpacity key={this.randomStringId(10)} onPress={() => this.sortColumnData(item.colId)} activeOpacity={0.8}>
-                        <View style={{ flexDirection: "row", paddingRight: 18, }}>
-                            <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
-                                <Text
-                                    style={[styles.headerText, { width: item.width - 13, marginLeft: 0, marginRight: 6 }]}>
-                                    {item.label}
-                                </Text>
-                                <Text
-                                    style={[styles.headerUnitText, { marginLeft: 0, marginRight: 6 }]}>
-                                    {item.unit}
-                                </Text>
-                            </View>
-                            {(this.state.sortType === "desc" && this.state.sortKey === item.colId) ? <Image source={require("../img/order_descending.png")} style={{ width: 7, height: 14 }} /> : (this.state.sortType === "asc" && this.state.sortKey === item.colId ? <Image source={require("../img/order_ascending.png")} style={{ width: 7, height: 14 }} /> : <Image source={require("../img/order_default.png")} style={{ width: 7, height: 14 }} />)}
-                        </View>
-                    </TouchableOpacity >
-                )
+            this.state.rightHeader.map((item) => (
+                item.sortable ? this.renderSortableColumn(item) : this.renderFixedColumn(item)
             )
-        );
+            ))
     }
     setModalVisible (visible) {
         this.setState({ modalVisible: visible });
