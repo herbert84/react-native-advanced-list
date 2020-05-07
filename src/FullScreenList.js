@@ -6,6 +6,7 @@ import { AdvancedList } from "react-native-advanced-list";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import * as _ from "lodash";
 import TextSize from "react-native-text-size";
+import { isIphoneX } from './ScreenUtil';
 
 const screentHeight = Dimensions.get("screen").height;
 console.log(screentHeight);
@@ -17,6 +18,7 @@ export default class AdvancedFullScreenList extends React.Component {
             rowHeight: 55,
             showFloatButton: true,
             rightHeader: [],
+            leftHeader: {},
             data: [],
             sortKey: "",
             sortType: "",
@@ -32,10 +34,20 @@ export default class AdvancedFullScreenList extends React.Component {
     calculateColumns () {
         let data = this.props.data;
         let columns = [];
+        let leftHeader = {};
         let playerData = [];
         let findHasUnit = false;
         for (var i in data.cols) {
-            if (data.cols[i].kpi) {
+            if (data.cols[i].fixed) {
+                leftHeader = {
+                    colId: data.cols[i].colId,
+                    label: data.cols[i].name,
+                    textAlign: "left",
+                    fixed: true,
+                    sortable: false,
+                    width: 100
+                }
+            } else if (data.cols[i].kpi) {
                 if (data.cols[i].unit)
                     findHasUnit = true;
                 columns.push({
@@ -63,15 +75,39 @@ export default class AdvancedFullScreenList extends React.Component {
             playerData.push(data.rowsTable[j]);
         }
 
+        let newList = _.sortBy(playerData, function (o) {
+            return parseInt(o.SHIRT_NUMBER, 10);
+        });
         this.setState({
             headerAlignCenter: !findHasUnit,
-            data: { "players": playerData },
-            rightHeader: columns
+            data: { "players": newList },
+            rightHeader: columns,
+            leftHeader
         }, () => this.measureTextSize());
     }
-    measureTextSize (text) {
+    measureTextSize () {
         let promiseList = [];
         var that = this;
+        promiseList.push(new Promise(function (resolve, reject) {
+            let fixedColumnList = [];
+            let fixedKey = "";
+            fixedKey = that.state.leftHeader.colId;
+            for (var l in that.state.data.players) {
+                fixedColumnList.push(that.state.data.players[l][fixedKey])
+            }
+            var longestValue = fixedColumnList.reduce(function (a, b) { return a.length > b.length ? a : b; });
+            console.log("longestValue")
+            console.log(longestValue)
+            TextSize.measure({
+                text: longestValue,
+                fontFamily: undefined,
+                fontSize: 16
+            }).then((size) => {
+                resolve(size);
+            }).catch((err) => {
+                reject(err);
+            });
+        }))
         for (var i in this.state.rightHeader) {
             let columnName = this.state.rightHeader[i];
             promiseList.push(new Promise(function (resolve, reject) {
@@ -87,8 +123,16 @@ export default class AdvancedFullScreenList extends React.Component {
             }));
         }
         Promise.all(promiseList).then(function (values) {
-            console.log(values);
+            //console.log(values);
             let newRightHeader = [];
+            let fixedColumn = {
+                colId: that.state.leftHeader.colId,
+                label: that.state.leftHeader.label,
+                sortable: that.state.leftHeader.sortable,
+                textAlign: that.state.leftHeader.textAlign ? that.state.leftHeader.textAlign : "left",
+                fixed: that.state.leftHeader.fixed,
+                width: values[0].width + 10
+            }
             for (var j in that.state.rightHeader) {
                 let column = {
                     colId: that.state.rightHeader[j].colId,
@@ -96,12 +140,12 @@ export default class AdvancedFullScreenList extends React.Component {
                     unit: that.state.rightHeader[j].unit,
                     sortable: that.state.rightHeader[j].sortable,
                     textAlign: that.state.rightHeader[j].textAlign ? that.state.rightHeader[j].textAlign : "left",
-                    width: values[j].width + 10
+                    width: values[parseInt(j, 10) + 1].width + 10
                 };
                 newRightHeader.push(column);
             }
-            let marginLeft = Platform.OS === "ios" ? 34 : 0;
-            let marginRight = Platform.OS === "ios" ? 34 : 0;
+            let marginLeft = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
+            let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
             let tableWidth = screentHeight - marginLeft - marginRight - 18 - 18;
             let availableWidth = tableWidth - 100;
             for (var k in newRightHeader) {
@@ -112,7 +156,8 @@ export default class AdvancedFullScreenList extends React.Component {
                 }
             }
             that.setState({
-                rightHeader: newRightHeader
+                rightHeader: newRightHeader,
+                leftHeader: fixedColumn
             });
         }).catch((err) => {
             console.log(err);
@@ -135,8 +180,8 @@ export default class AdvancedFullScreenList extends React.Component {
             <TouchableHighlight
                 key={this.randomStringId(10)}>
                 <View style={{ height: this.state.rowHeight, paddingLeft: 18, justifyContent: "center", alignItems: "flex-start", backgroundColor: bgColor }}>
-                    <Text style={[styles.text, { textAlign: "left" }]}>
-                        {player.SHIRT_NUMBER ? player.SHIRT_NUMBER : "" + " " + player.PLAYER_NAME ? player.PLAYER_NAME : ""}
+                    <Text style={[styles.text, { textAlign: "left", width: this.state.leftHeader.width }]}>
+                        {player.COLUMN_FIXED}
                     </Text>
                 </View>
             </TouchableHighlight>
@@ -257,7 +302,8 @@ export default class AdvancedFullScreenList extends React.Component {
         });
     }
     renderFloatButton () {
-        return this.state.showFloatButton ? <ActionButton onPress={() => this.hideTable()} buttonColor={"rgba(0, 0, 0, 0)"} offsetX={42} hideShadow={true} size={69} renderIcon={() => { return <Image source={require("../img/test_result_back.png")} style={{ height: 69, width: 69 }} />; }} /> : null;
+        let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 58 : 24) : 24;
+        return this.state.showFloatButton ? <ActionButton onPress={() => this.hideTable()} buttonColor={"rgba(0, 0, 0, 0)"} offsetX={marginRight} hideShadow={true} size={60} renderIcon={() => { return <Image source={require("../img/test_result_back.png")} style={{ height: 60, width: 60 }} />; }} /> : null;
     }
     showHideFloatButton (isScrolling) {
         this.setState({
@@ -276,11 +322,11 @@ export default class AdvancedFullScreenList extends React.Component {
                 }}
             >
                 <AdvancedList
-                    isScrolling={(isScrolling) => this.showHideFloatButton(isScrolling)}
+                    //isScrolling={(isScrolling) => this.showHideFloatButton(isScrolling)}
                     leftList={{
                         listHeader: () => {
                             return <View style={[styles.headerBar, { justifyContent: "center", paddingLeft: 18 }]}>
-                                <Text style={[styles.headerText, { textAlign: "left" }]}>号码&球员</Text>
+                                <Text style={[styles.headerText, { textAlign: "left", width: this.state.leftHeader.width }]}>{this.state.leftHeader.label}</Text>
                             </View>;
                         },
                         sectionHeader: (section, sectionIndex) => {
@@ -327,7 +373,8 @@ const styles = StyleSheet.create(
             fontSize: 16,
             width: 100,
             textAlign: "right",
-            color: "#232426"
+            color: "#232426",
+            fontWeight: "bold"
         },
         headerUnitText: {
             fontSize: 8,

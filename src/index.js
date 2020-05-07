@@ -6,6 +6,7 @@ import {
     StyleSheet,
     Platform
 } from 'react-native'
+import { isIphoneX } from './ScreenUtil';
 
 import PropTypes from 'prop-types'
 
@@ -45,8 +46,8 @@ export default class AdvancedList extends Component {
         this.rightScrollViewOffsetY = 0
         this.frozenScrollViewBeginDragging = false
         this.rightHeaderScrollViewBeginDragging = false
-        this.isScrolling = false
-        this.slideStart = false;
+        //this.isScrolling = false
+        //this.slideStart = false;
 
         this.state = {
             leftScrollView: null,
@@ -122,8 +123,8 @@ export default class AdvancedList extends Component {
                         onScrollBeginDrag={() => this.frozenScrollViewBeginDragging = true}
                         onMomentumScrollEnd={() => {
                             //console.log("stoped");
-                            this.isScrolling = false;
-                            this.props.isScrolling && this.props.isScrolling(false)
+                            //this.isScrolling = false;
+                            //this.props.isScrolling && this.props.isScrolling(false)
                         }}
                         onScroll={(event) => {
                             if (this.frozenScrollViewBeginDragging) {
@@ -153,26 +154,26 @@ export default class AdvancedList extends Component {
                         showsVerticalScrollIndicator={false}
                         scrollEventThrottle={16}
                         onScroll={(event) => {
-                            if (!this.isScrolling) {
-                                this.isScrolling = true;
-                                this.props.isScrolling && this.props.isScrolling(true)
-                            }
+                            //if (!this.isScrolling) {
+                            //this.isScrolling = true;
+                            //this.props.isScrolling && this.props.isScrolling(true)
+                            //}
                         }}
                         onScrollEndDrag={() => {
-                            setTimeout(() => {
+                            /*setTimeout(() => {
                                 if (!this.slideStart && this.isScrolling) {
                                     this.props.isScrolling && this.props.isScrolling(false)
                                 }
-                            }, 200)
+                            }, 200)*/
                         }}
                         onMomentumScrollBegin={() => {
-                            this.slideStart = true;
+                            //this.slideStart = true;
                         }}
                         onMomentumScrollEnd={() => {
                             //console.log("stoped");
-                            this.slideStart = false;
-                            this.isScrolling = false;
-                            this.props.isScrolling && this.props.isScrolling(false)
+                            //this.slideStart = false;
+                            //this.isScrolling = false;
+                            //this.props.isScrolling && this.props.isScrolling(false)
                         }}
                     >
                         <View>
@@ -213,26 +214,26 @@ export default class AdvancedList extends Component {
                                     this.rightHeaderScrollViewBeginDragging = false
                                 }}
                                 onScrollEndDrag={() => {
-                                    setTimeout(() => {
+                                    /*setTimeout(() => {
                                         if (!this.slideStart && this.isScrolling) {
                                             this.props.isScrolling && this.props.isScrolling(false)
                                         }
-                                    }, 200)
+                                    }, 200)*/
                                 }}
                                 onMomentumScrollBegin={() => {
-                                    this.slideStart = true;
+                                    //this.slideStart = true;
                                 }}
                                 onMomentumScrollEnd={() => {
-                                    this.slideStart = false;
-                                    this.isScrolling = false;
-                                    this.props.isScrolling && this.props.isScrolling(false)
+                                    //this.slideStart = false;
+                                    //this.isScrolling = false;
+                                    //this.props.isScrolling && this.props.isScrolling(false)
                                 }}
                                 onScroll={(event) => {
                                     //console.log("scrolling");
-                                    if (!this.isScrolling) {
-                                        this.isScrolling = true;
-                                        this.props.isScrolling && this.props.isScrolling(true)
-                                    }
+                                    //if (!this.isScrolling) {
+                                    //this.isScrolling = true;
+                                    //this.props.isScrolling && this.props.isScrolling(true)
+                                    //}
                                     if (!this.frozenScrollViewBeginDragging) {
                                         this.state.leftScrollView.scrollTo({ x: 0, y: event.nativeEvent.contentOffset.y, animated: false });
                                     }
@@ -266,10 +267,10 @@ export default class AdvancedList extends Component {
 const styles = StyleSheet.create(
     {
         tableLeft: {
-            marginLeft: Platform.OS === "ios" ? 34 : 0
+            marginLeft: Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0
         },
         tableRight: {
-            marginRight: Platform.OS === "ios" ? 34 : 0
+            marginRight: Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0
         }
     }
 );
