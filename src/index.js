@@ -148,7 +148,9 @@ export default class AdvancedList extends Component {
                 <View style={{ flex: 1 }}>
                     <ScrollView
                         key={'rightscrollviewcontainer'}
-                        bounces={false}
+                        //bounces={false}
+                        alwaysBounceVertical={false}
+                        alwaysBounceHorizontal={true}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         showsVerticalScrollIndicator={false}
@@ -181,7 +183,7 @@ export default class AdvancedList extends Component {
                                 <ScrollView
                                     key={'rightheaderscrollview'}
                                     horizontal={true}
-                                    alwaysBounceHorizontal={false}
+                                    //alwaysBounceHorizontal={false}
                                     scrollEventThrottle={16}
                                     showsHorizontalScrollIndicator={false}
                                     showsVerticalScrollIndicator={false}
@@ -201,7 +203,7 @@ export default class AdvancedList extends Component {
                             <ScrollView
                                 bounces={false}
                                 alwaysBounceVertical={false}
-                                alwaysBounceHorizontal={false}
+                                //alwaysBounceHorizontal={false}
                                 directionalLockEnabled={true}
                                 scrollEventThrottle={16}
                                 key={'rightscrollview'}
