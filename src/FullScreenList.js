@@ -318,7 +318,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 supportedOrientations={["landscape-right", "landscape-left", "portrait"]}
                 visible={this.props.isVisible}
                 onRequestClose={() => {
-                    console.log("Modal has been closed.");
+                    this.hideTable()
                 }}
             >
                 <AdvancedList
