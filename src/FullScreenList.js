@@ -37,6 +37,11 @@ export default class AdvancedFullScreenList extends React.Component {
         let leftHeader = {};
         let playerData = [];
         let findHasUnit = false;
+        for (var j in data.rowsTable) {
+            playerData.push(data.rowsTable[j]);
+        }
+        let sortArray = JSON.parse(JSON.stringify(playerData));
+
         for (var i in data.cols) {
             if (data.cols[i].fixed) {
                 leftHeader = {
@@ -50,29 +55,33 @@ export default class AdvancedFullScreenList extends React.Component {
             } else if (data.cols[i].kpi) {
                 if (data.cols[i].unit)
                     findHasUnit = true;
+                let maxLengthValue = _.maxBy(sortArray, function (item) {
+                    return item[data.cols[i].colId] ? item[data.cols[i].colId].length : 0;
+                })
                 columns.push({
                     colId: data.cols[i].colId,
                     label: data.cols[i].name,
                     unit: data.cols[i].unit,
                     sortable: true,
                     textAlign: "right",
-                    width: 100
+                    width: 100,
+                    maxValue: maxLengthValue[data.cols[i].colId]
                 });
             }
             if (data.cols[i].colId === "COMMENT") {
+                let maxLengthValue = _.maxBy(sortArray, function (item) {
+                    return item[data.cols[i].colId] ? item[data.cols[i].colId].length : 0;
+                })
                 columns.push({
                     colId: data.cols[i].colId,
                     label: data.cols[i].name,
                     unit: "",
                     sortable: false,
                     textAlign: "left",
-                    width: 100
+                    width: 100,
+                    maxValue: maxLengthValue[data.cols[i].colId]
                 });
             }
-        }
-
-        for (var j in data.rowsTable) {
-            playerData.push(data.rowsTable[j]);
         }
 
         let newList = _.sortBy(playerData, function (o) {
@@ -88,6 +97,9 @@ export default class AdvancedFullScreenList extends React.Component {
     measureTextSize () {
         let promiseList = [];
         var that = this;
+        //get longest width for left fixed column
+        //console.log("right headers");
+        //console.log(this.state.rightHeader);
         promiseList.push(new Promise(function (resolve, reject) {
             let fixedColumnList = [];
             let fixedKey = "";
@@ -96,8 +108,8 @@ export default class AdvancedFullScreenList extends React.Component {
                 fixedColumnList.push(that.state.data.players[l][fixedKey])
             }
             var longestValue = fixedColumnList.reduce(function (a, b) { return a.length > b.length ? a : b; });
-            console.log("longestValue")
-            console.log(longestValue)
+            //console.log("longestValue")
+            //console.log(longestValue)
             TextSize.measure({
                 text: longestValue,
                 fontFamily: undefined,
@@ -108,11 +120,12 @@ export default class AdvancedFullScreenList extends React.Component {
                 reject(err);
             });
         }))
+        //get longest width for each label on right header side
         for (var i in this.state.rightHeader) {
             let columnName = this.state.rightHeader[i];
             promiseList.push(new Promise(function (resolve, reject) {
                 TextSize.measure({
-                    text: columnName.label,
+                    text: columnName.label.length > columnName.maxValue.length ? columnName.label : columnName.maxValue,
                     fontFamily: undefined,
                     fontSize: 16
                 }).then((size) => {
@@ -140,7 +153,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     unit: that.state.rightHeader[j].unit,
                     sortable: that.state.rightHeader[j].sortable,
                     textAlign: that.state.rightHeader[j].textAlign ? that.state.rightHeader[j].textAlign : "left",
-                    width: values[parseInt(j, 10) + 1].width + 10
+                    width: values[parseInt(j, 10) + 1].width + 30
                 };
                 newRightHeader.push(column);
             }
@@ -292,8 +305,10 @@ export default class AdvancedFullScreenList extends React.Component {
     }
     showTable () {
         this.setModalVisible(true);
-        if (Platform.OS === "ios") { Orientation.lockToLandscapeRight(); }
-        else { Orientation.lockToLandscapeLeft(); }
+        setTimeout(() => {
+            if (Platform.OS === "ios") { Orientation.lockToLandscapeRight(); }
+            else { Orientation.lockToLandscapeLeft(); }
+        }, 200);
     }
     hideTable () {
         this.props.hideTable && this.props.hideTable();
