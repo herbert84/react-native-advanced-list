@@ -8,8 +8,9 @@ import * as _ from "lodash";
 import TextSize from "react-native-text-size";
 import { isIphoneX } from './ScreenUtil';
 
-const screentHeight = Dimensions.get("screen").height;
-console.log(screentHeight);
+const screenWidth = Dimensions.get("screen").width;
+const screenHeight = Dimensions.get("screen").height;
+console.log(screenHeight);
 export default class AdvancedFullScreenList extends React.Component {
     constructor(props) {
         super(props);
@@ -65,7 +66,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     sortable: true,
                     textAlign: "right",
                     width: 100,
-                    maxValue: maxLengthValue[data.cols[i].colId]
+                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : 0
                 });
             }
             if (data.cols[i].colId === "COMMENT") {
@@ -79,7 +80,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     sortable: false,
                     textAlign: "left",
                     width: 100,
-                    maxValue: maxLengthValue[data.cols[i].colId]
+                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : 0
                 });
             }
         }
@@ -123,11 +124,25 @@ export default class AdvancedFullScreenList extends React.Component {
         //get longest width for each label on right header side
         for (var i in this.state.rightHeader) {
             let columnName = this.state.rightHeader[i];
+            //计算右边滑动列头部标签的宽度
             promiseList.push(new Promise(function (resolve, reject) {
                 TextSize.measure({
-                    text: columnName.label.length > columnName.maxValue.length ? columnName.label : columnName.maxValue,
+                    text: columnName.label,
                     fontFamily: undefined,
-                    fontSize: 16
+                    fontSize: 12
+                }).then((size) => {
+                    resolve(size);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }));
+            //计算右边滑动列数据字段最大值的宽度
+            promiseList.push(new Promise(function (resolve, reject) {
+                TextSize.measure({
+                    text: columnName.maxValue,
+                    fontFamily: undefined,
+                    fontSize: 16,
+                    fontWeight: "bold"
                 }).then((size) => {
                     resolve(size);
                 }).catch((err) => {
@@ -138,6 +153,7 @@ export default class AdvancedFullScreenList extends React.Component {
         Promise.all(promiseList).then(function (values) {
             //console.log(values);
             let newRightHeader = [];
+            //计算第一列固定列的最大宽度
             let fixedColumn = {
                 colId: that.state.leftHeader.colId,
                 label: that.state.leftHeader.label,
@@ -146,6 +162,8 @@ export default class AdvancedFullScreenList extends React.Component {
                 fixed: that.state.leftHeader.fixed,
                 width: values[0].width + 10
             }
+            let valuesIndex = 0;
+            //计算右边滑动列的每列最大宽度，
             for (var j in that.state.rightHeader) {
                 let column = {
                     colId: that.state.rightHeader[j].colId,
@@ -153,14 +171,17 @@ export default class AdvancedFullScreenList extends React.Component {
                     unit: that.state.rightHeader[j].unit,
                     sortable: that.state.rightHeader[j].sortable,
                     textAlign: that.state.rightHeader[j].textAlign ? that.state.rightHeader[j].textAlign : "left",
-                    width: values[parseInt(j, 10) + 1].width + 30
+                    width: values[valuesIndex + 1].width + 13 > values[valuesIndex + 2].width ? values[valuesIndex + 1].width + 13 : values[valuesIndex + 2].width + 10
                 };
+                valuesIndex = valuesIndex + 2;
                 newRightHeader.push(column);
             }
             let marginLeft = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
             let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
-            let tableWidth = screentHeight - marginLeft - marginRight - 18 - 18;
+            let horizontalScreenWidth = screenHeight > screenWidth ? screenHeight : screenWidth;
+            let tableWidth = horizontalScreenWidth - marginLeft - marginRight - 18 - 18;
             let availableWidth = tableWidth - 100;
+            console.log(availableWidth);
             for (var k in newRightHeader) {
                 if (newRightHeader[k].colId !== "COMMENT")
                     availableWidth -= newRightHeader[k].width + 18
@@ -168,6 +189,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     newRightHeader[k].width = availableWidth > newRightHeader[k].width ? availableWidth : newRightHeader[k].width
                 }
             }
+            console.log(newRightHeader);
             that.setState({
                 rightHeader: newRightHeader,
                 leftHeader: fixedColumn
