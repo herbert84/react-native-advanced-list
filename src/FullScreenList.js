@@ -32,6 +32,13 @@ export default class AdvancedFullScreenList extends React.Component {
         Orientation.lockToPortrait();
         Orientation.addOrientationListener(this._orientationDidChange);
     }
+    componentWillReceiveProps (nextProps) {
+        //console.log(nextProps)
+        //console.log(this.props)
+        if (nextProps.isVisible && !this.props.isVisible) {
+            this.initialData()
+        }
+    }
     calculateColumns () {
         let data = this.props.data;
         let columns = [];
@@ -250,6 +257,16 @@ export default class AdvancedFullScreenList extends React.Component {
                 </View>
             </TouchableHighlight>
         );
+    }
+    initialData () {
+        let newList = _.sortBy(this.state.data.players, function (o) {
+            return parseInt(o.SHIRT_NUMBER, 10);
+        });
+        this.setState({
+            data: { players: newList },
+            sortKey: "",
+            sortType: ""
+        });
     }
     sortColumnData (colId) {
         let sortType = "desc";
