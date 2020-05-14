@@ -64,7 +64,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 if (data.cols[i].unit)
                     findHasUnit = true;
                 let maxLengthValue = _.maxBy(sortArray, function (item) {
-                    return item[data.cols[i].colId] ? item[data.cols[i].colId].length : 0;
+                    return item[data.cols[i].colId] ? item[data.cols[i].colId].length : "0";
                 })
                 columns.push({
                     colId: data.cols[i].colId,
@@ -73,7 +73,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     sortable: true,
                     textAlign: "right",
                     width: 100,
-                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : 0
+                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : "0"
                 });
             }
             if (data.cols[i].colId === "COMMENT") {
@@ -87,7 +87,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     sortable: false,
                     textAlign: "left",
                     width: 100,
-                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : 0
+                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : "0"
                 });
             }
         }
