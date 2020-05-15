@@ -3,7 +3,6 @@ import { Modal, View, Dimensions, TouchableHighlight, StyleSheet, Platform, Imag
 import ActionButton from "react-native-action-button";
 import Orientation from "react-native-orientation";
 import { AdvancedList } from "react-native-advanced-list";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import * as _ from "lodash";
 import TextSize from "react-native-text-size";
 import { isIphoneX } from './ScreenUtil';
@@ -29,8 +28,8 @@ export default class AdvancedFullScreenList extends React.Component {
     }
     componentDidMount () {
         this.calculateColumns();
-        Orientation.lockToPortrait();
-        Orientation.addOrientationListener(this._orientationDidChange);
+        //Orientation.lockToPortrait();
+        //Orientation.addOrientationListener(this._orientationDidChange);
     }
     componentWillReceiveProps (nextProps) {
         //console.log(nextProps)
@@ -178,7 +177,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     unit: that.state.rightHeader[j].unit,
                     sortable: that.state.rightHeader[j].sortable,
                     textAlign: that.state.rightHeader[j].textAlign ? that.state.rightHeader[j].textAlign : "left",
-                    width: values[valuesIndex + 1].width + 13 > values[valuesIndex + 2].width ? values[valuesIndex + 1].width + 13 : values[valuesIndex + 2].width + 10
+                    width: values[valuesIndex + 1].width + 13 > values[valuesIndex + 2].width ? values[valuesIndex + 1].width + 15 : values[valuesIndex + 2].width + 10
                 };
                 valuesIndex = valuesIndex + 2;
                 newRightHeader.push(column);
@@ -188,7 +187,7 @@ export default class AdvancedFullScreenList extends React.Component {
             let horizontalScreenWidth = screenHeight > screenWidth ? screenHeight : screenWidth;
             let tableWidth = horizontalScreenWidth - marginLeft - marginRight - 18 - 18;
             let availableWidth = tableWidth - 100;
-            console.log(availableWidth);
+            //console.log(availableWidth);
             for (var k in newRightHeader) {
                 if (newRightHeader[k].colId !== "COMMENT")
                     availableWidth -= newRightHeader[k].width + 18
@@ -196,7 +195,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     newRightHeader[k].width = availableWidth > newRightHeader[k].width ? availableWidth : newRightHeader[k].width
                 }
             }
-            console.log(newRightHeader);
+            //console.log(newRightHeader);
             that.setState({
                 rightHeader: newRightHeader,
                 leftHeader: fixedColumn
@@ -207,7 +206,7 @@ export default class AdvancedFullScreenList extends React.Component {
     }
     componentWillUnmount () {
         // Remember to remove listener
-        Orientation.removeOrientationListener(this._orientationDidChange);
+        //Orientation.removeOrientationListener(this._orientationDidChange);
     }
     _orientationDidChange = (orientation) => {
         if (orientation === "LANDSCAPE") {
@@ -371,6 +370,9 @@ export default class AdvancedFullScreenList extends React.Component {
                 transparent={false}
                 supportedOrientations={["landscape-right", "landscape-left", "portrait"]}
                 visible={this.props.isVisible}
+                hideModalContentWhileAnimating={true}
+                deviceWidth={screenHeight}
+                deviceHeight={screenWidth}
                 onRequestClose={() => {
                     this.hideTable()
                 }}
