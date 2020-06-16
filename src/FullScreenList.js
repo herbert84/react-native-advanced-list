@@ -47,6 +47,7 @@ export default class AdvancedFullScreenList extends React.Component {
         for (var j in data.rowsTable) {
             playerData.push(data.rowsTable[j]);
         }
+        //console.log(data)
         let sortArray = JSON.parse(JSON.stringify(playerData));
 
         for (var i in data.cols) {
@@ -92,7 +93,7 @@ export default class AdvancedFullScreenList extends React.Component {
         var that = this;
         //get longest width for left fixed column
         //console.log("right headers");
-        //console.log(this.state.rightHeader);
+        //console.log(this.state.leftHeader);
         for (var i in this.state.leftHeader) {
             promiseList.push(new Promise(function (resolve, reject) {
                 let fixedColumnList = [];
@@ -105,7 +106,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 //console.log("longestValue")
                 //console.log(longestValue)
                 TextSize.measure({
-                    text: longestValue,
+                    text: longestValue.length > that.state.leftHeader[i].label.length ? longestValue : that.state.leftHeader[i].label,
                     fontFamily: undefined,
                     fontSize: 16
                 }).then((size) => {
@@ -158,7 +159,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 isFixed: that.state.leftHeader.isFixed,
                 width: values[0].width + 10
             }
-            let valuesIndex = 0;
+
             //计算左边滑动列的每列最大宽度，
             for (var j in that.state.leftHeader) {
                 let column = {
@@ -172,6 +173,7 @@ export default class AdvancedFullScreenList extends React.Component {
                 newLeftHeader.push(column);
             }
 
+            let valuesIndex = that.state.leftHeader.length - 1;
             //计算右边滑动列的每列最大宽度，
             for (var j in that.state.rightHeader) {
                 let column = {
@@ -225,12 +227,21 @@ export default class AdvancedFullScreenList extends React.Component {
             let columnKey = this.state.leftHeader[i].colId;
             let textAlign = this.state.leftHeader[i].textAlign;
             let width = this.state.leftHeader[i].width;
-            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}><Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text></View>);
+            let item = null;
+            if (player[columnKey] === "11") {
+                item = <View style={{ width, alignItems: "center" }}><Image source={require("../img/replied.png")} style={{ width: 16, height: 13 }} /></View>;
+            } else if (player[columnKey] === "00") {
+                item = null;
+            } else {
+                item = <Text style={[styles.text, { width, textAlign }]}>{player[columnKey].toString()}</Text>;
+            }
+
+            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}>{item}</View>);
         }
         return (
             <TouchableHighlight
                 key={this.randomStringId(10)}>
-                <View style={{ height: this.state.rowHeight, paddingLeft: 18, justifyContent: "center", alignItems: "flex-start", backgroundColor: bgColor }}>
+                <View style={{ flexDirection: "row", height: this.state.rowHeight, paddingLeft: 18, alignItems: "center", backgroundColor: bgColor }}>
                     {rowItems}
                 </View>
             </TouchableHighlight>
@@ -255,9 +266,9 @@ export default class AdvancedFullScreenList extends React.Component {
             let width = this.state.rightHeader[i].width;
 
             let item = null;
-            if (player[columnKey] === true) {
-                item = <Image src="../img/replied.png" style={{ width: 32, height: 26 }} />;
-            } else if (player[columnKey] === false) {
+            if (player[columnKey] === "11") {
+                item = <Image source={require("../img/replied.png")} style={{ width: 16, height: 13 }} />;
+            } else if (player[columnKey] === "00") {
                 item = null;
             } else {
                 item = <Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text>;
@@ -405,7 +416,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     //isScrolling={(isScrolling) => this.showHideFloatButton(isScrolling)}
                     leftList={{
                         listHeader: () => {
-                            return <View style={[styles.headerBar, { justifyContent: "center", paddingLeft: 18 }]}>
+                            return <View style={[styles.headerBar, { flexDirection: "row", alignItems: "center", paddingLeft: 18 }]}>
                                 {this._favLeftHeader()}
                             </View>;
                         },
