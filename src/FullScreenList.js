@@ -18,7 +18,7 @@ export default class AdvancedFullScreenList extends React.Component {
             rowHeight: 55,
             showFloatButton: true,
             rightHeader: [],
-            leftHeader: {},
+            leftHeader: [],
             data: [],
             sortKey: "",
             sortType: "",
@@ -41,7 +41,7 @@ export default class AdvancedFullScreenList extends React.Component {
     calculateColumns () {
         let data = this.props.data;
         let columns = [];
-        let leftHeader = {};
+        let leftHeader = [];
         let playerData = [];
         let findHasUnit = false;
         for (var j in data.rowsTable) {
@@ -50,16 +50,16 @@ export default class AdvancedFullScreenList extends React.Component {
         let sortArray = JSON.parse(JSON.stringify(playerData));
 
         for (var i in data.cols) {
-            if (data.cols[i].fixed) {
-                leftHeader = {
+            if (data.cols[i].isFixed) {
+                leftHeader.push({
                     colId: data.cols[i].colId,
                     label: data.cols[i].name,
                     textAlign: "left",
-                    fixed: true,
-                    sortable: false,
+                    isFixed: true,
+                    sortable: data.cols[i].isSortable,
                     width: 100
-                }
-            } else if (data.cols[i].kpi) {
+                });
+            } else if (data.cols[i]) {
                 if (data.cols[i].unit)
                     findHasUnit = true;
                 let maxLengthValue = _.maxBy(sortArray, function (item) {
@@ -69,22 +69,8 @@ export default class AdvancedFullScreenList extends React.Component {
                     colId: data.cols[i].colId,
                     label: data.cols[i].name,
                     unit: data.cols[i].unit,
-                    sortable: true,
-                    textAlign: "right",
-                    width: 100,
-                    maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : "0"
-                });
-            }
-            if (data.cols[i].colId === "COMMENT") {
-                let maxLengthValue = _.maxBy(sortArray, function (item) {
-                    return item[data.cols[i].colId] ? item[data.cols[i].colId].length : 0;
-                })
-                columns.push({
-                    colId: data.cols[i].colId,
-                    label: data.cols[i].name,
-                    unit: "",
-                    sortable: false,
-                    textAlign: "left",
+                    sortable: data.cols[i].isSortable,
+                    textAlign: data.cols[i].isSortable ? "right" : "left",
                     width: 100,
                     maxValue: maxLengthValue[data.cols[i].colId] ? maxLengthValue[data.cols[i].colId] : "0"
                 });
@@ -107,26 +93,29 @@ export default class AdvancedFullScreenList extends React.Component {
         //get longest width for left fixed column
         //console.log("right headers");
         //console.log(this.state.rightHeader);
-        promiseList.push(new Promise(function (resolve, reject) {
-            let fixedColumnList = [];
-            let fixedKey = "";
-            fixedKey = that.state.leftHeader.colId;
-            for (var l in that.state.data.players) {
-                fixedColumnList.push(that.state.data.players[l][fixedKey])
-            }
-            var longestValue = fixedColumnList.reduce(function (a, b) { return a.length > b.length ? a : b; });
-            //console.log("longestValue")
-            //console.log(longestValue)
-            TextSize.measure({
-                text: longestValue,
-                fontFamily: undefined,
-                fontSize: 16
-            }).then((size) => {
-                resolve(size);
-            }).catch((err) => {
-                reject(err);
-            });
-        }))
+        for (var i in this.state.leftHeader) {
+            promiseList.push(new Promise(function (resolve, reject) {
+                let fixedColumnList = [];
+                let fixedKey = "";
+                fixedKey = that.state.leftHeader[i].colId;
+                for (var l in that.state.data.players) {
+                    fixedColumnList.push(that.state.data.players[l][fixedKey])
+                }
+                var longestValue = fixedColumnList.reduce(function (a, b) { return a.length > b.length ? a : b; });
+                //console.log("longestValue")
+                //console.log(longestValue)
+                TextSize.measure({
+                    text: longestValue,
+                    fontFamily: undefined,
+                    fontSize: 16
+                }).then((size) => {
+                    resolve(size);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }))
+        }
+
         //get longest width for each label on right header side
         for (var i in this.state.rightHeader) {
             let columnName = this.state.rightHeader[i];
@@ -159,16 +148,30 @@ export default class AdvancedFullScreenList extends React.Component {
         Promise.all(promiseList).then(function (values) {
             //console.log(values);
             let newRightHeader = [];
+            let newLeftHeader = [];
             //计算第一列固定列的最大宽度
             let fixedColumn = {
                 colId: that.state.leftHeader.colId,
                 label: that.state.leftHeader.label,
                 sortable: that.state.leftHeader.sortable,
                 textAlign: that.state.leftHeader.textAlign ? that.state.leftHeader.textAlign : "left",
-                fixed: that.state.leftHeader.fixed,
+                isFixed: that.state.leftHeader.isFixed,
                 width: values[0].width + 10
             }
             let valuesIndex = 0;
+            //计算左边滑动列的每列最大宽度，
+            for (var j in that.state.leftHeader) {
+                let column = {
+                    colId: that.state.leftHeader[j].colId,
+                    label: that.state.leftHeader[j].label,
+                    unit: that.state.leftHeader[j].unit,
+                    sortable: that.state.leftHeader[j].sortable,
+                    textAlign: that.state.leftHeader[j].textAlign ? that.state.leftHeader[j].textAlign : "left",
+                    width: values[j].width + 13
+                };
+                newLeftHeader.push(column);
+            }
+
             //计算右边滑动列的每列最大宽度，
             for (var j in that.state.rightHeader) {
                 let column = {
@@ -198,7 +201,7 @@ export default class AdvancedFullScreenList extends React.Component {
             //console.log(newRightHeader);
             that.setState({
                 rightHeader: newRightHeader,
-                leftHeader: fixedColumn
+                leftHeader: newLeftHeader
             });
         }).catch((err) => {
             console.log(err);
@@ -217,13 +220,18 @@ export default class AdvancedFullScreenList extends React.Component {
     }
     _favLeftView (player, idx) {
         let bgColor = idx % 2 === 0 ? "#FFFFFF" : "#F9FAFB";
+        let rowItems = [];
+        for (var i in this.state.leftHeader) {
+            let columnKey = this.state.leftHeader[i].colId;
+            let textAlign = this.state.leftHeader[i].textAlign;
+            let width = this.state.leftHeader[i].width;
+            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}><Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text></View>);
+        }
         return (
             <TouchableHighlight
                 key={this.randomStringId(10)}>
                 <View style={{ height: this.state.rowHeight, paddingLeft: 18, justifyContent: "center", alignItems: "flex-start", backgroundColor: bgColor }}>
-                    <Text style={[styles.text, { textAlign: "left", width: this.state.leftHeader.width }]}>
-                        {player.COLUMN_FIXED}
-                    </Text>
+                    {rowItems}
                 </View>
             </TouchableHighlight>
         );
@@ -245,7 +253,16 @@ export default class AdvancedFullScreenList extends React.Component {
             let columnKey = this.state.rightHeader[i].colId;
             let textAlign = this.state.rightHeader[i].textAlign;
             let width = this.state.rightHeader[i].width;
-            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}><Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text></View>);
+
+            let item = null;
+            if (player[columnKey] === true) {
+                item = <Image src="../img/replied.png" style={{ width: 32, height: 26 }} />;
+            } else if (player[columnKey] === false) {
+                item = null;
+            } else {
+                item = <Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text>;
+            }
+            rowItems.push(<View key={this.randomStringId(10)} style={{ flexDirection: "row", paddingRight: 18 }}>{item}</View>);
         }
         return (
             <TouchableHighlight
@@ -331,6 +348,13 @@ export default class AdvancedFullScreenList extends React.Component {
             </View>
         </View>)
     }
+    _favLeftHeader () {
+        return (
+            this.state.leftHeader.map((item) => (
+                item.sortable ? this.renderSortableColumn(item) : this.renderFixedColumn(item)
+            )
+            ))
+    }
     _favHeader () {
         return (
             this.state.rightHeader.map((item) => (
@@ -382,7 +406,7 @@ export default class AdvancedFullScreenList extends React.Component {
                     leftList={{
                         listHeader: () => {
                             return <View style={[styles.headerBar, { justifyContent: "center", paddingLeft: 18 }]}>
-                                <Text style={[styles.headerText, { textAlign: "left", width: this.state.leftHeader.width }]}>{this.state.leftHeader.label}</Text>
+                                {this._favLeftHeader()}
                             </View>;
                         },
                         sectionHeader: (section, sectionIndex) => {
