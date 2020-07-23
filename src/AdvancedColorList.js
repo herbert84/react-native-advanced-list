@@ -240,7 +240,7 @@ export default class AdvancedColorList extends React.Component {
                 if (isFixed) {
                     leftHeader.push({
                         ...commonProps,
-                        subLabel: locale.indexOf("zh") > 0 ? "球队平均" : "Team Average",
+                        subLabel: locale.indexOf("zh") > -1 ? "球队平均" : "Team Average",
                         textAlign: "left",
                         isFixed: true
                     });
