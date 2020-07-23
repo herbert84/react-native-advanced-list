@@ -142,7 +142,7 @@ export default class AdvancedColorList extends React.Component {
     }
 
     renderFloatButton() {
-        let marginRight = Platform.OS === "ios" ? (this.isIphoneX() ? 58 : 24) : 24;
+        let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 58 : 24) : 24;
         return this.state.showFloatButton ? <ActionButton
             onPress={() => this.hideTable()}
             buttonColor={"rgba(0, 0, 0, 0)"}
@@ -356,8 +356,8 @@ export default class AdvancedColorList extends React.Component {
                 newRightHeader.push(column);
             });
 
-            let marginLeft = Platform.OS === "ios" ? (this.isIphoneX() ? 34 : 0) : 0;
-            let marginRight = Platform.OS === "ios" ? (this.isIphoneX() ? 34 : 0) : 0;
+            let marginLeft = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
+            let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
             let horizontalScreenWidth = screenHeight > screenWidth ? screenHeight : screenWidth;
             let tableWidth = horizontalScreenWidth - marginLeft - marginRight - 18 - 18;
             let availableWidth = tableWidth - 100;
