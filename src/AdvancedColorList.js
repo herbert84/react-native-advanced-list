@@ -4,7 +4,7 @@ import { View, Text, Modal, Dimensions, StyleSheet, TouchableHighlight, Image, P
 import Orientation from "react-native-orientation";
 import ActionButton from "react-native-action-button";
 import TextSize from "react-native-text-size";
-import { cloneDeep, sortBy, maxBy, forEach, meanBy, toInteger, round, isEqual } from "lodash";
+import { cloneDeep, sortBy, maxBy, forEach, meanBy, toInteger, round, isEqual, filter } from "lodash";
 import { isIphoneX } from './ScreenUtil';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("screen");
@@ -251,11 +251,11 @@ export default class AdvancedColorList extends React.Component {
                     let maxLengthValue = maxBy(playerData, (playerItem) => {
                         return playerItem[colId].length;
                     });
-                    let meanValue = meanBy(playerData, (playerItem) => {
-                        return parseFloat(playerItem[colId], 10);
+                    let meanValue = meanBy(filter(playerData, (playerItem) => toInteger(playerItem[colId]) !== 0), (playerItem) => {
+                        return toInteger(playerItem[colId]);
                     });
                     let maxValue = maxBy(playerData, (playerItem) => {
-                        return parseFloat(playerItem[colId], 10);
+                        return toInteger(playerItem[colId]);
                     });
                     columns.push({
                         ...commonProps,
