@@ -21,8 +21,7 @@ export default class AdvancedColorList extends React.Component {
             data: [],
             sortKey: "",
             sortType: "",
-            headerAlignCenter: false,
-            availableWidth: 0
+            headerAlignCenter: false
         };
     }
     componentDidMount() {
@@ -249,7 +248,7 @@ export default class AdvancedColorList extends React.Component {
                         findHasUnit = true;
                     }
                     let maxLengthValue = maxBy(playerData, (playerItem) => {
-                        return playerItem[colId].length;
+                        return playerItem[colId] ? playerItem[colId].length : 0;
                     });
                     let meanValue = meanBy(filter(playerData, (playerItem) => toInteger(playerItem[colId]) !== 0), (playerItem) => {
                         return toInteger(playerItem[colId]);
@@ -361,8 +360,8 @@ export default class AdvancedColorList extends React.Component {
             let horizontalScreenWidth = screenHeight > screenWidth ? screenHeight : screenWidth;
             let tableWidth = horizontalScreenWidth - marginLeft - marginRight - 18 - 18;
             let availableWidth = tableWidth - 100;
-            forEach(newRightHeader, (item) => {
-                if (item.colId !== "COMMENT") {
+            forEach(newRightHeader, (item, index) => {
+                if (index !== newRightHeader.length - 1) {
                     availableWidth -= item.width + 18;
                 } else {
                     item.width = availableWidth > item.width ? availableWidth : item.width;
