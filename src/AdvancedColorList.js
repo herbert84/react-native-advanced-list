@@ -7,7 +7,7 @@ import TextSize from "react-native-text-size";
 import { cloneDeep, sortBy, maxBy, forEach, meanBy, toInteger, round, isEqual, filter } from "lodash";
 import { isIphoneX } from './ScreenUtil';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("screen");
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default class AdvancedColorList extends React.Component {
     constructor(props) {
@@ -331,20 +331,24 @@ export default class AdvancedColorList extends React.Component {
             let newLeftHeader = [];
 
             //计算左边滑动列的每列最大宽度，
+            let leftWidth = 0
             forEach(leftHeader, (item, index) => {
+                const itemWidth = values[index].width + 13;
                 let column = {
                     ...item,
                     textAlign: item.textAlign ?? "left",
-                    width: values[index].width + 13
+                    width: itemWidth
                 };
+                leftWidth += itemWidth + 18;
                 newLeftHeader.push(column);
             });
-
 
             let valuesIndex = leftHeader.length - 1;
             //计算右边滑动列的每列最大宽度，
             forEach(rightHeader, (item) => {
+                // 标签的宽度
                 const valueOne = values[valuesIndex + 1];
+                // 值最大的宽度
                 const valueTwo = values[valuesIndex + 2];
                 let column = {
                     ...item,
@@ -357,9 +361,11 @@ export default class AdvancedColorList extends React.Component {
 
             let marginLeft = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
             let marginRight = Platform.OS === "ios" ? (isIphoneX() ? 34 : 0) : 0;
+
             let horizontalScreenWidth = screenHeight > screenWidth ? screenHeight : screenWidth;
             let tableWidth = horizontalScreenWidth - marginLeft - marginRight - 18 - 18;
-            let availableWidth = tableWidth - 100;
+
+            let availableWidth = tableWidth - leftWidth;
             forEach(newRightHeader, (item, index) => {
                 if (index !== newRightHeader.length - 1) {
                     availableWidth -= item.width + 18;
