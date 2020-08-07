@@ -228,9 +228,9 @@ export default class AdvancedFullScreenList extends React.Component {
             let textAlign = this.state.leftHeader[i].textAlign;
             let width = this.state.leftHeader[i].width;
             let item = null;
-            if (player[columnKey] === "11") {
+            if (player[columnKey] === "FLAG") {
                 item = <View style={{ width, alignItems: "center" }}><Image source={require("../img/replied.png")} style={{ width: 16, height: 13 }} /></View>;
-            } else if (player[columnKey] === "00") {
+            } else if (player[columnKey] === "NOFLAG") {
                 item = null;
             } else {
                 item = <Text style={[styles.text, { width, textAlign }]}>{player[columnKey].toString()}</Text>;
@@ -266,9 +266,9 @@ export default class AdvancedFullScreenList extends React.Component {
             let width = this.state.rightHeader[i].width;
 
             let item = null;
-            if (player[columnKey] === "11") {
+            if (player[columnKey] === "FLAG") {
                 item = <Image source={require("../img/replied.png")} style={{ width: 16, height: 13 }} />;
-            } else if (player[columnKey] === "00") {
+            } else if (player[columnKey] === "NOFLAG") {
                 item = null;
             } else {
                 item = <Text style={[styles.text, { width, textAlign }]} >{player[columnKey]}</Text>;
