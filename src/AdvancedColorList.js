@@ -250,7 +250,7 @@ export default class AdvancedColorList extends React.Component {
                     let maxLengthValue = maxBy(playerData, (playerItem) => {
                         return playerItem[colId] ? playerItem[colId].length : 0;
                     });
-                    let meanValue = meanBy(filter(playerData, (playerItem) => toInteger(playerItem[colId]) !== 0), (playerItem) => {
+                    let meanValue = meanBy(playerData, (playerItem) => {
                         return toInteger(playerItem[colId]);
                     });
                     let maxValue = maxBy(playerData, (playerItem) => {
