@@ -27,11 +27,14 @@ export default class AdvancedColorList extends React.Component {
     componentDidMount() {
         this.calculateColumns();
     }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.isVisible && !this.props.isVisible) {
-            this.initialData();
-        }
-    }
+    // 由于SSCAE-4792所描述的功能，目前在 引用该组件的地方 判断了 this.props.data有值 则 实例化该组件，否则渲染null
+    // 且在 this.props.hideTable 回调里设置了this.props.data为null
+    // 所以无需使用componentWillReceiveProps来重置排序和球员列表，仅用this.calculateColumns()即可，同时使用会有冲突
+    // componentWillReceiveProps(nextProps) {
+    //     if (nextProps.isVisible && !this.props.isVisible) {
+    //         this.initialData();
+    //     }
+    // }
 
     renderHeader(isLeft) {
         const { leftHeader, rightHeader } = this.state;
@@ -123,7 +126,8 @@ export default class AdvancedColorList extends React.Component {
         forEach(rightHeader, (item) => {
             const { colId, textAlign, width, subLabel, maxValue, unit } = item;
             const currentValue = parseFloat(player[colId], 10);
-            const isExcept = isEqual(unit.toLocaleUpperCase(), "MINS");
+            // 由于SSCAE-4792所描述的功能，有可能体能参数没有unit
+            const isExcept = unit ? isEqual(unit.toLocaleUpperCase(), "MINS") : false;
             const isBigger = currentValue > subLabel;
             const isMax = currentValue === maxValue;
             const colorStyle = isExcept ? [] : [isBigger ? styles.yellowMark : {}, isMax ? styles.greenMark : {}];
